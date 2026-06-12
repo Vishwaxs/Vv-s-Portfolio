@@ -34,7 +34,7 @@ npm run dev
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon (publishable) key |
-| `SUPABASE_SERVICE_ROLE_KEY` | server only | Admin mutations, contact inserts |
+| `SUPABASE_SERVICE_ROLE_KEY` | server only | Signed URLs for the public resume download (everything else runs under RLS) |
 | `ANTHROPIC_API_KEY` | optional | Enables AI resume parsing/sync (falls back to manual entry) |
 | `NEXT_PUBLIC_SITE_URL` | yes | Canonical URL for metadata/sitemap |
 

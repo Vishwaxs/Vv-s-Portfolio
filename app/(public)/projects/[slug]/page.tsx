@@ -8,13 +8,8 @@ import { Section } from "@/components/ui/Section";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Markdown } from "@/components/site/Markdown";
-import { getProjectBySlug, getProjects } from "@/lib/data";
+import { getProjectBySlug } from "@/lib/data";
 import { formatDate, publicAssetUrl } from "@/lib/utils";
-
-export async function generateStaticParams() {
-  const projects = await getProjects();
-  return projects.filter((p) => p.published).map((p) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({
   params,
