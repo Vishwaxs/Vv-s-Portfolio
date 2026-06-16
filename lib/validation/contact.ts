@@ -7,8 +7,10 @@ export const contactSchema = z.object({
   // z.input and z.output identical for the resolver
   subject: z.string().trim().max(300),
   message: z.string().trim().min(10, "Tell me a bit more (10+ characters)").max(5000),
-  // honeypot: humans never fill this
-  website: z.string().max(0, "Spam detected"),
+  // honeypot: humans never fill this. Kept always-valid so a filled value
+  // reaches the route, which returns a fake success instead of a 400 — bots
+  // learn nothing. The route checks `website` truthiness to drop the message.
+  website: z.string(),
 });
 
 export type ContactInput = z.infer<typeof contactSchema>;
