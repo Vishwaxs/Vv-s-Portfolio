@@ -1,0 +1,102 @@
+name: Deploy to Vercel
+
+# Deploys the app to Vercel on every push to main (and on manual dispatch).
+#
+# ONE-TIME SETUP (the only thing that can't be automated — it needs your
+# Vercel account):
+#   1. Create a Vercel token: https://vercel.com/account/tokens (scope: Full).
+#   2. Add it to this repo: Settings → Secrets and variables → Actions →
+#      New repository secret → name it VERCEL_TOKEN.
+#   3. (Optional) Add SUPABASE_SERVICE_ROLE_KEY and ANTHROPIC_API_KEY the same
+#      way to enable the resume download + AI parsing. The site works without them.
+#
+# Then push to main, or run this workflow manually (Actions → Deploy to Vercel
+# → Run workflow). The job prints the live URL in its summary.
+#
+# Until VERCEL_TOKEN exists the job is a green no-op, so it never blocks the repo.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Gate on VERCEL_TOKEN
+        id: gate
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy skipped::Add a VERCEL_TOKEN repository secret to enable automatic Vercel deploys."
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Vercel CLI
+        if: steps.gate.outputs.ready == 'true'
+        run: npm install -g vercel@latest
+
+      - name: Create project, set env, and deploy
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          # The Supabase URL and anon key are safe to expose — the anon key is a
+          # publishable key already shipped to browsers, and RLS protects all data.
+          SUPABASE_URL: https://uqfsdxaoqktwndcguxcu.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZnNkeGFvcWt0d25kY2d1eGN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMTkzOTYsImV4cCI6MjA5Njc5NTM5Nn0.iYtMUlXwdMGDj0UvAh16qSwk9vXSiLoNWhyZxAnmw6E
+          # Optional — only applied if you set them as repo secrets.
+          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Optional override; defaults to the project's vercel.app URL.
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -e
+          PROJECT=vv-portfolio
+
+          # Create the project if it doesn't exist yet, then link this checkout to it.
+          vercel project add "$PROJECT" --token "$VERCEL_TOKEN" 2>/dev/null || true
+          vercel link --yes --project "$PROJECT" --token "$VERCEL_TOKEN"
+
+          # Idempotently (re)set each environment variable across all targets.
+          put () {
+            name="$1"; value="$2"
+            [ -z "$value" ] && return 0
+            for tgt in production preview development; do
+              vercel env rm "$name" "$tgt" --yes --token "$VERCEL_TOKEN" >/dev/null 2>&1 || true
+              printf '%s' "$value" | vercel env add "$name" "$tgt" --token "$VERCEL_TOKEN" >/dev/null 2>&1 || true
+            done
+          }
+          put NEXT_PUBLIC_SUPABASE_URL      "$SUPABASE_URL"
+          put NEXT_PUBLIC_SUPABASE_ANON_KEY "$SUPABASE_ANON_KEY"
+          put NEXT_PUBLIC_SITE_URL          "${SITE_URL:-https://${PROJECT}.vercel.app}"
+          put SUPABASE_SERVICE_ROLE_KEY     "$SERVICE_ROLE_KEY"
+          put ANTHROPIC_API_KEY             "$ANTHROPIC_API_KEY"
+
+          # Build + ship to production. Vercel auto-detects Next.js.
+          URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN")
+          echo "Production URL: $URL"
+          {
+            echo "## ✅ Deployed to Vercel"
+            echo ""
+            echo "**Live:** $URL"
+            echo ""
+            echo "If this is the first deploy, set \`NEXT_PUBLIC_SITE_URL\` to the real"
+            echo "domain (repo variable \`SITE_URL\`) and re-run for correct metadata."
+          } >> "$GITHUB_STEP_SUMMARY"
