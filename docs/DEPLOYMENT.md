@@ -43,8 +43,13 @@ Then sign in at `https://your-domain/admin/login`.
    | `NEXT_PUBLIC_SUPABASE_URL` | `https://uqfsdxaoqktwndcguxcu.supabase.co` |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key from Supabase |
    | `SUPABASE_SERVICE_ROLE_KEY` | service role key (mark *Sensitive*) |
-   | `ANTHROPIC_API_KEY` | optional — enables AI resume parsing |
+   | `GEMINI_API_KEY` | optional — enables AI resume parsing via Google Gemini |
+   | `ANTHROPIC_API_KEY` | optional — alternative AI provider (Gemini wins if both set) |
    | `NEXT_PUBLIC_SITE_URL` | the production URL, e.g. `https://vv.example.com` |
+
+   The resume module uses **Gemini** when `GEMINI_API_KEY` is present, otherwise
+   **Anthropic** when `ANTHROPIC_API_KEY` is present; with neither, it falls back
+   to manual entry. Optionally set `GEMINI_MODEL` (default `gemini-2.5-flash`).
 
 3. Deploy. After the first deploy, update `NEXT_PUBLIC_SITE_URL` if you attach
    a custom domain (Vercel → Domains), and redeploy so metadata/sitemap use it.
