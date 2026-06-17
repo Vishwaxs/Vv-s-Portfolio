@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { aiAvailable } from "@/lib/ai/anthropic";
+import { aiAvailable } from "@/lib/ai/provider";
 import { ParsedResume } from "@/lib/ai/resume-schema";
 import { Badge } from "@/components/ui/Badge";
 import { ParsedReview } from "@/components/admin/ParsedReview";
@@ -61,7 +61,7 @@ export default async function ResumeDetail({
         <p className="rounded-card border border-line bg-surface-1 p-6 text-sm text-ink-secondary">
           {aiAvailable
             ? "Not parsed yet — use the sparkle button on the resumes list to extract structured data from the PDF."
-            : "AI parsing is disabled (no ANTHROPIC_API_KEY). Add content manually through the entity pages on the left."}
+            : "AI parsing is disabled (no GEMINI_API_KEY or ANTHROPIC_API_KEY). Add content manually through the entity pages on the left."}
         </p>
       )}
 

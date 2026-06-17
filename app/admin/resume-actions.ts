@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { writeAudit } from "@/lib/audit";
-import { aiAvailable } from "@/lib/ai/anthropic";
+import { aiAvailable } from "@/lib/ai/provider";
 import { ParsedResume, type ParsedResumeType } from "@/lib/ai/resume-schema";
 import type { Json, Tables } from "@/lib/database.types";
 import type { ActionResult } from "@/app/admin/actions";
