@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { aiAvailable } from "@/lib/ai/anthropic";
+import { aiAvailable, providerLabel } from "@/lib/ai/provider";
 import { ResumeList } from "@/components/admin/ResumeList";
 import { ResumeUploader } from "@/components/admin/ResumeUploader";
 
@@ -24,10 +24,15 @@ export default async function ResumesAdmin() {
         </div>
       </div>
 
-      {!aiAvailable && (
+      {aiAvailable ? (
+        <p className="rounded-lg border border-line bg-surface-1 px-4 py-3 text-sm text-ink-secondary">
+          AI parsing is on via <strong>{providerLabel()}</strong>.
+        </p>
+      ) : (
         <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-ink">
-          <strong>AI parsing is off</strong> — set <code>ANTHROPIC_API_KEY</code> to
-          enable PDF parsing and sync suggestions. Uploads and manual entry still work.
+          <strong>AI parsing is off</strong> — set <code>GEMINI_API_KEY</code> (or{" "}
+          <code>ANTHROPIC_API_KEY</code>) to enable PDF parsing and sync suggestions.
+          Uploads and manual entry still work.
         </p>
       )}
 
