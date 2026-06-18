@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { Section } from "@/components/ui/Section";
 import { ProjectFilter } from "@/components/site/ProjectFilter";
 import { getProjects, getRoleOverrides, getRoles } from "@/lib/data";
-import { pickRole, rankProjects, ROLE_COOKIE } from "@/lib/role-engine";
+import { pickActiveRole, rankProjects } from "@/lib/role-engine";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -11,13 +10,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsPage() {
-  const [projects, roles, overrides, cookieStore] = await Promise.all([
+  const [projects, roles, overrides] = await Promise.all([
     getProjects(),
     getRoles(),
     getRoleOverrides(),
-    cookies(),
   ]);
-  const role = pickRole(roles, cookieStore.get(ROLE_COOKIE)?.value);
+  const role = pickActiveRole(roles);
   const ranked = rankProjects(projects, role, overrides);
 
   const categories = [
