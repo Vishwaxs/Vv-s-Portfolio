@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { GithubIcon } from "@/components/site/BrandIcons";
 import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+import { SpotlightCard } from "@/components/site/SpotlightCard";
 import { publicAssetUrl } from "@/lib/utils";
 import type { Project } from "@/lib/data";
 
@@ -11,7 +11,10 @@ export function ProjectCard({ project }: { project: Project }) {
   const cover = publicAssetUrl(project.cover_image_path);
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
+    <SpotlightCard
+      className="h-full transition-transform duration-300 hover:-translate-y-1"
+      innerClassName="flex h-full flex-col"
+    >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-2">
         {cover ? (
           <Image
@@ -19,10 +22,9 @@ export function ProjectCard({ project }: { project: Project }) {
             alt={`${project.title} cover`}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover/spot:scale-105"
           />
         ) : (
-          // gradient placeholder so cards without a cover still read as rich
           <div
             className="flex h-full w-full items-center justify-center"
             style={{
@@ -35,7 +37,6 @@ export function ProjectCard({ project }: { project: Project }) {
             </span>
           </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </div>
       <div className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-3">
@@ -86,6 +87,6 @@ export function ProjectCard({ project }: { project: Project }) {
           )}
         </div>
       </div>
-    </Card>
+    </SpotlightCard>
   );
 }

@@ -6,24 +6,42 @@ Project: **vv-portfolio** (`uqfsdxaoqktwndcguxcu`, region `ap-south-1`) in
 Vishwaxs's Org. The schema, RLS policies, storage buckets, and seed content are
 applied — migration sources live in `supabase/migrations/` and `supabase/seed.sql`.
 
-### One-time: create the admin user
+### Logging in / creating the admin account
 
-The dashboard at `/admin` needs exactly one admin account. In the
-[Supabase dashboard](https://supabase.com/dashboard/project/uqfsdxaoqktwndcguxcu):
+`/admin/login` offers two methods: a passwordless **email link** (magic link)
+and **email + password**.
 
-1. **Authentication → Users → Add user → Create new user.** Use your email,
-   set a strong password, check *Auto Confirm User*.
-2. **SQL Editor**, run (replacing the email):
+**Easiest (recommended) — self-bootstrap via email link:**
 
+1. Set env vars (Vercel → Settings → Environment Variables):
+   `BOOTSTRAP_ADMIN_EMAIL` = your email, and `SUPABASE_SERVICE_ROLE_KEY`
+   (Supabase → Project Settings → API). Redeploy.
+2. Supabase → **Authentication → URL Configuration**: set *Site URL* to your
+   production URL and add `https://YOUR-DOMAIN/auth/callback` to *Redirect URLs*.
+3. Go to `/admin/login` → **Email link** → enter that same email → open the link
+   from your inbox. On first login you're auto-enrolled as the admin.
+4. (Optional) Supabase → **Authentication → Providers / Sign-ups**: disable new
+   signups so only your email can request a usable session.
+
+> Free-tier note: Supabase's built-in email has low hourly limits and links may
+> land in spam. For reliable delivery configure custom SMTP, or use the manual
+> method below.
+
+**Manual alternative (no email needed):**
+
+1. Supabase → **Authentication → Users → Add user** — your email + a password,
+   check *Auto Confirm User*.
+2. **SQL Editor:**
    ```sql
    insert into public.admin_users (user_id)
-   select id from auth.users where email = 'you@example.com';
+   select id from auth.users where email = 'you@example.com'
+   on conflict do nothing;
    ```
+3. Sign in at `/admin/login` with the **Password** tab.
 
-3. **Authentication → Sign In / Up:** disable new user signups, so nobody else
-   can register.
-
-Then sign in at `https://your-domain/admin/login`.
+**Google sign-in (optional):** create an OAuth client in Google Cloud, add the
+client id/secret under Supabase → Authentication → Providers → Google, then a
+"Continue with Google" button can be added to the login form.
 
 ### Keys
 

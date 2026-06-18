@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/Badge";
+import { SpotlightCard } from "@/components/site/SpotlightCard";
 import type { SkillCategory } from "@/lib/data";
 
 const levelLabels = ["", "Learning", "Basic", "Comfortable", "Strong", "Expert"];
@@ -8,10 +9,7 @@ export function SkillGrid({ categories }: { categories: SkillCategory[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
       {nonEmpty.map((cat) => (
-        <div
-          key={cat.id}
-          className="rounded-card border border-line bg-surface-1 p-5 transition-shadow hover:shadow-card"
-        >
+        <SpotlightCard key={cat.id} innerClassName="p-5">
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-ink-muted">
             {cat.name}
           </h3>
@@ -49,7 +47,7 @@ export function SkillGrid({ categories }: { categories: SkillCategory[] }) {
               </li>
             ))}
           </ul>
-        </div>
+        </SpotlightCard>
       ))}
     </div>
   );

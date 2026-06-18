@@ -67,6 +67,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # Optional override; defaults to the project's vercel.app URL.
           SITE_URL: ${{ vars.SITE_URL }}
+          # Optional: first-admin email auto-enrolled on first login.
+          BOOTSTRAP_ADMIN_EMAIL: ${{ vars.BOOTSTRAP_ADMIN_EMAIL }}
         run: |
           set -e
           PROJECT=vv-portfolio
@@ -90,6 +92,7 @@ jobs:
           put SUPABASE_SERVICE_ROLE_KEY     "$SERVICE_ROLE_KEY"
           put GEMINI_API_KEY                "$GEMINI_API_KEY"
           put ANTHROPIC_API_KEY             "$ANTHROPIC_API_KEY"
+          put BOOTSTRAP_ADMIN_EMAIL         "$BOOTSTRAP_ADMIN_EMAIL"
 
           # Build + ship to production. Vercel auto-detects Next.js.
           URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN")
