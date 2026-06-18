@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { EntityManager } from "@/components/admin/EntityManager";
+import { RoleActivator } from "@/components/admin/RoleActivator";
 
 export const metadata = { title: "Roles" };
 
 export default async function RolesAdmin() {
   const supabase = await createClient();
   const { data } = await supabase.from("roles").select("*").order("sort_order");
+  const roles = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -15,9 +17,20 @@ export default async function RolesAdmin() {
         the hero copy. Weights are JSON maps of slug → number, e.g.{" "}
         <code className="rounded bg-surface-2 px-1">{"{"}&quot;react&quot;: 1.0{"}"}</code>.
       </p>
+
+      <RoleActivator
+        roles={roles.map((r) => ({
+          id: r.id,
+          name: r.name,
+          slug: r.slug,
+          is_active: r.is_active,
+          published: r.published,
+        }))}
+      />
+
       <EntityManager
         table="roles"
-        rows={data ?? []}
+        rows={roles}
         titleField="name"
         listColumns={["name", "slug", "is_default", "published"]}
         fields={[

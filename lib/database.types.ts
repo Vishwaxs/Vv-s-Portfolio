@@ -557,6 +557,7 @@ export type Database = {
           hero_headline: string
           hero_tagline: string
           id: string
+          is_active: boolean
           is_default: boolean
           keyword_boosts: Json
           name: string
@@ -571,6 +572,7 @@ export type Database = {
           hero_headline?: string
           hero_tagline?: string
           id?: string
+          is_active?: boolean
           is_default?: boolean
           keyword_boosts?: Json
           name: string
@@ -585,6 +587,7 @@ export type Database = {
           hero_headline?: string
           hero_tagline?: string
           id?: string
+          is_active?: boolean
           is_default?: boolean
           keyword_boosts?: Json
           name?: string

@@ -125,6 +125,7 @@ insert into public.education (institution, degree, field, start_date, end_date, 
    '2022-07-01', '2025-05-31', '8.03 CGPA',
    array[]::text[], 2);
 
+-- The admin marks ONE role is_active (shown publicly); sde starts active (see 0006_active_role.sql).
 insert into public.roles (slug, name, description, is_default, hero_headline, hero_tagline, skill_weights, keyword_boosts, sort_order) values
   ('sde', 'Software Engineer', 'Generalist SDE positioning: problem solving, fundamentals, end-to-end ownership.',
    true,
@@ -143,7 +144,31 @@ insert into public.roles (slug, name, description, is_default, hero_headline, he
    'Vishwas Vashishtha — frontend developer',
    'React, Next.js, and Tailwind — interfaces that are fast, accessible, and maintainable.',
    '{"react": 1.0, "next-js": 1.0, "tailwind-css": 1.0, "html-css": 0.9, "javascript": 0.9}'::jsonb,
-   '{"react": 1.0, "ui": 1.0, "tailwind": 1.0, "frontend": 1.0}'::jsonb, 3);
+   '{"react": 1.0, "ui": 1.0, "tailwind": 1.0, "frontend": 1.0}'::jsonb, 3),
+  ('backend', 'Backend Developer', 'APIs, databases, and server-side logic.',
+   false,
+   'Vishwas Vashishtha — backend developer',
+   'I build REST APIs and relational data models with Node, Express, and SQL — and I care about correctness and clean schema design.',
+   '{"node-js": 1.0, "express": 1.0, "sql": 1.0, "mysql": 0.9, "supabase-postgres": 0.9, "javascript": 0.7}'::jsonb,
+   '{"api": 1.0, "rest": 1.0, "sql": 1.0, "express": 0.9, "mysql": 0.9, "postgres": 0.9, "node": 0.8}'::jsonb, 4),
+  ('data-analyst', 'Data Analyst', 'Turning data into decisions with SQL and analysis.',
+   false,
+   'Vishwas Vashishtha — data analyst',
+   'MCA student strong in SQL and problem solving, building toward analytics roles — querying, modeling, and making sense of data.',
+   '{"sql": 1.0, "mysql": 0.9, "supabase-postgres": 0.8, "javascript": 0.5}'::jsonb,
+   '{"sql": 1.0, "mysql": 0.9, "postgres": 0.9, "data": 1.0, "analytics": 1.0, "query": 0.8}'::jsonb, 5),
+  ('data-engineer', 'Data Engineer', 'Pipelines, databases, and data infrastructure.',
+   false,
+   'Vishwas Vashishtha — data engineer',
+   'I work with relational databases and backend services, building toward data-engineering: schemas, pipelines, and reliable storage.',
+   '{"sql": 1.0, "mysql": 0.9, "supabase-postgres": 1.0, "node-js": 0.8, "express": 0.6}'::jsonb,
+   '{"sql": 1.0, "postgres": 1.0, "mysql": 0.9, "pipeline": 1.0, "etl": 1.0, "data": 1.0, "api": 0.6}'::jsonb, 6),
+  ('devops', 'Cloud / DevOps Engineer', 'Deployment, CI/CD, and cloud infrastructure.',
+   false,
+   'Vishwas Vashishtha — cloud & DevOps',
+   'I ship and operate full-stack apps on modern cloud platforms — git-based CI/CD, Vercel, and Supabase — and I''m deepening my cloud skills.',
+   '{"vercel": 1.0, "git-github": 1.0, "supabase-postgres": 0.9, "next-js": 0.7, "node-js": 0.7}'::jsonb,
+   '{"vercel": 1.0, "ci/cd": 1.0, "cloud": 1.0, "deploy": 1.0, "docker": 0.8, "github": 0.9, "supabase": 0.8}'::jsonb, 7);
 
 insert into public.site_settings (key, value) values
   ('seo', '{"site_name": "Vishwas Vashishtha", "title_template": "%s · Vishwas Vashishtha", "default_description": "Full-stack developer & MCA student at Christ University, Bangalore. React, Next.js, Node.js, SQL. Open to SDE internships."}'::jsonb),

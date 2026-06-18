@@ -1,7 +1,5 @@
 import type { Project, Role, RoleOverride, SkillCategory } from "@/lib/data";
 
-export const ROLE_COOKIE = "vv-role";
-
 type OverrideShape = {
   pinned?: boolean;
   hidden?: boolean;
@@ -32,12 +30,14 @@ function keywordScore(haystack: string, boosts: Record<string, number>): number 
   );
 }
 
-export function pickRole(roles: Role[], slug: string | undefined): Role | null {
-  if (slug) {
-    const match = roles.find((r) => r.slug === slug);
-    if (match) return match;
-  }
-  return roles.find((r) => r.is_default) ?? roles[0] ?? null;
+/** The admin-chosen active persona, falling back to default/first. */
+export function pickActiveRole(roles: Role[]): Role | null {
+  return (
+    roles.find((r) => r.is_active) ??
+    roles.find((r) => r.is_default) ??
+    roles[0] ??
+    null
+  );
 }
 
 /** Re-rank projects for a role: keyword boosts against tech stack + summary,
