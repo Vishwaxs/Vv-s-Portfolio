@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
@@ -34,6 +35,15 @@ export function Hero({
 }) {
   const reduced = useReducedMotion();
   const photo = publicAssetUrl(avatarPath) ?? "/imgs/359.JPG";
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const onMove = (e: React.MouseEvent<HTMLElement>) => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--hx", `${e.clientX - r.left}px`);
+    el.style.setProperty("--hy", `${e.clientY - r.top}px`);
+  };
 
   const container = {
     hidden: {},
@@ -44,13 +54,22 @@ export function Hero({
     : { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <section className="relative overflow-hidden">
+    <section ref={sectionRef} onMouseMove={onMove} className="relative overflow-hidden">
       {/* animated background blobs */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="animate-blob absolute -left-16 top-10 h-72 w-72 rounded-full bg-accent-300/30 blur-3xl dark:bg-accent-700/20" />
-        <div className="animate-blob animation-delay-2000 absolute right-0 top-0 h-72 w-72 rounded-full bg-grad-via/20 blur-3xl" style={{ backgroundColor: "color-mix(in oklch, var(--color-grad-via) 22%, transparent)" }} />
-        <div className="animate-blob animation-delay-4000 absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-grad-to/20 blur-3xl" style={{ backgroundColor: "color-mix(in oklch, var(--color-grad-to) 20%, transparent)" }} />
+        <div className="animate-blob animation-delay-2000 absolute right-0 top-0 h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in oklch, var(--color-grad-via) 22%, transparent)" }} />
+        <div className="animate-blob animation-delay-4000 absolute bottom-0 left-1/3 h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in oklch, var(--color-grad-to) 20%, transparent)" }} />
       </div>
+      {/* cursor-following spotlight */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(500px circle at var(--hx, 70%) var(--hy, 20%), color-mix(in oklch, var(--color-accent-500) 14%, transparent), transparent 70%)",
+        }}
+      />
 
       <motion.div
         variants={container}
@@ -90,7 +109,7 @@ export function Hero({
               {signals.map((s) => (
                 <li
                   key={s}
-                  className="rounded-full border border-line bg-surface-1 px-3 py-1 text-sm font-medium text-ink"
+                  className="glass rounded-full px-3 py-1 text-sm font-medium text-ink"
                 >
                   {s}
                 </li>

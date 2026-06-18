@@ -19,6 +19,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/admin";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { MobileNav } from "@/components/admin/MobileNav";
 
@@ -56,11 +57,27 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const { data: membership } = await supabase
+  let { data: membership } = await supabase
     .from("admin_users")
     .select("user_id")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  // First-admin bootstrap: if this signed-in email matches the configured
+  // BOOTSTRAP_ADMIN_EMAIL and isn't enrolled yet, self-enroll via the
+  // service-role client. Lets the owner provision themselves by simply
+  // logging in once — no manual SQL or agent-created credentials.
+  if (
+    !membership &&
+    process.env.BOOTSTRAP_ADMIN_EMAIL &&
+    user.email?.toLowerCase() === process.env.BOOTSTRAP_ADMIN_EMAIL.toLowerCase()
+  ) {
+    const service = createServiceClient();
+    if (service) {
+      await service.from("admin_users").upsert({ user_id: user.id });
+      membership = { user_id: user.id };
+    }
+  }
 
   if (!membership) {
     await supabase.auth.signOut();

@@ -94,6 +94,21 @@ body {
   color: white;
 }
 
+/* Frosted glass surface (backdrop blur + saturation). Used by SpotlightCard
+   and other elevated panels. Falls back to a solid surface where
+   backdrop-filter is unsupported. */
+.glass {
+  background-color: color-mix(in oklch, var(--color-surface-1) 72%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-line) 75%, transparent);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background-color: color-mix(in oklch, var(--color-surface-1) 55%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+}
+
 /* Gradient text helper used in hero/section headings */
 .text-gradient {
   background-image: linear-gradient(
