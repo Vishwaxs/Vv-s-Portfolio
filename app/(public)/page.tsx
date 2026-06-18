@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { ArrowRight, Download, GraduationCap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Section } from "@/components/ui/Section";
+import { Hero } from "@/components/site/Hero";
+import { Services } from "@/components/site/Services";
 import { ProjectCard } from "@/components/site/ProjectCard";
 import { SkillGrid } from "@/components/site/SkillGrid";
 import { Timeline, type TimelineItem } from "@/components/site/Timeline";
@@ -16,9 +17,10 @@ import {
   getRoles,
   getSections,
   getSkillCategories,
+  getSocialLinks,
   section,
 } from "@/lib/data";
-import { pickRole, rankProjects, rankSkills, ROLE_COOKIE } from "@/lib/role-engine";
+import { pickActiveRole, rankProjects, rankSkills } from "@/lib/role-engine";
 
 export default async function HomePage() {
   const [
@@ -30,7 +32,7 @@ export default async function HomePage() {
     experience,
     roles,
     overrides,
-    cookieStore,
+    socials,
   ] = await Promise.all([
     getProfile(),
     getSections(),
@@ -40,14 +42,16 @@ export default async function HomePage() {
     getExperience(),
     getRoles(),
     getRoleOverrides(),
-    cookies(),
+    getSocialLinks(),
   ]);
 
-  const role = pickRole(roles, cookieStore.get(ROLE_COOKIE)?.value);
+  const role = pickActiveRole(roles);
   const hero = section(sections, "hero");
   const rankedProjects = rankProjects(projects, role, overrides);
-  const featured = rankedProjects.filter((p) => p.featured).slice(0, 2);
+  const featured = rankedProjects.filter((p) => p.featured).slice(0, 3);
   const rankedSkills = rankSkills(skills, role);
+  const publishedProjectCount = projects.filter((p) => p.published).length;
+  const mca = education.find((e) => /mca|master/i.test(e.degree));
 
   const timeline: TimelineItem[] = [
     ...experience
@@ -74,31 +78,26 @@ export default async function HomePage() {
       })),
   ];
 
+  const signals = [
+    mca ? "MCA '27" : null,
+    mca?.grade ? mca.grade.replace(/\s*\(in progress\)/i, "").trim() : null,
+    publishedProjectCount > 0 ? `${publishedProjectCount} shipped projects` : null,
+    "Open to SDE internships",
+  ].filter((s): s is string => Boolean(s));
+
   return (
     <>
-      {/* Hero */}
-      <Section className="pb-10 pt-24">
-        <Reveal>
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface-1 px-4 py-1.5 text-sm text-ink-secondary">
-            <GraduationCap size={15} />
-            {hero?.body_md || "Open to opportunities"}
-          </p>
-          <h1 className="max-w-3xl text-display text-ink">
-            {role?.hero_headline || profile?.full_name || "Portfolio"}
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-            {role?.hero_tagline || profile?.tagline}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button href="/projects" size="lg">
-              View projects <ArrowRight size={17} />
-            </Button>
-            <Button href="/api/resume/download" variant="secondary" size="lg">
-              <Download size={17} /> Download resume
-            </Button>
-          </div>
-        </Reveal>
-      </Section>
+      <Hero
+        name={profile?.full_name ?? "Portfolio"}
+        headline={role?.hero_headline ?? profile?.headline ?? ""}
+        tagline={role?.hero_tagline ?? profile?.tagline ?? ""}
+        badge={hero?.body_md || "Open to opportunities"}
+        signals={signals}
+        avatarPath={profile?.avatar_path ?? null}
+        socials={socials}
+      />
+
+      <Services />
 
       {/* Featured projects */}
       {featured.length > 0 && (

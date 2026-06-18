@@ -26,6 +26,11 @@
   --color-accent-800: oklch(39% 0.16 275);
   --color-accent-900: oklch(33% 0.13 275);
 
+  /* Secondary hue (violet/pink) for gradients used in hero/headings */
+  --color-grad-from: oklch(58% 0.18 265);
+  --color-grad-via: oklch(56% 0.2 310);
+  --color-grad-to: oklch(60% 0.18 350);
+
   --color-success: oklch(62% 0.15 150);
   --color-warning: oklch(75% 0.15 80);
   --color-danger: oklch(58% 0.2 25);
@@ -89,8 +94,46 @@ body {
   color: white;
 }
 
+/* Gradient text helper used in hero/section headings */
+.text-gradient {
+  background-image: linear-gradient(
+    to right,
+    var(--color-grad-from),
+    var(--color-grad-via),
+    var(--color-grad-to)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Decorative motion (hero blobs, avatar ring). Disabled for reduced motion. */
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(24px, -36px) scale(1.08); }
+  66% { transform: translate(-18px, 18px) scale(0.94); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+.animate-blob { animation: blob 9s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 24s linear infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  .animate-blob,
+  .animate-spin-slow,
+  .animate-float {
+    animation: none;
   }
 }

@@ -11,18 +11,32 @@ export function ProjectCard({ project }: { project: Project }) {
   const cover = publicAssetUrl(project.cover_image_path);
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden p-0 transition-shadow hover:shadow-lg">
-      {cover && (
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-2">
+    <Card className="group flex h-full flex-col overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-2">
+        {cover ? (
           <Image
             src={cover}
             alt={`${project.title} cover`}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
-        </div>
-      )}
+        ) : (
+          // gradient placeholder so cards without a cover still read as rich
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, var(--color-grad-from), var(--color-grad-via), var(--color-grad-to))",
+            }}
+          >
+            <span className="text-5xl font-bold text-white/90">
+              {project.title.charAt(0)}
+            </span>
+          </div>
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </div>
       <div className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-h3 text-ink">
