@@ -39,9 +39,13 @@ and **email + password**.
    ```
 3. Sign in at `/admin/login` with the **Password** tab.
 
-**Google sign-in (optional):** create an OAuth client in Google Cloud, add the
-client id/secret under Supabase → Authentication → Providers → Google, then a
-"Continue with Google" button can be added to the login form.
+**Google sign-in (optional, free):** the "Continue with Google" button is
+already on the login page. To enable it: in **Google Cloud Console** create an
+OAuth 2.0 Client (Web), add the Supabase callback
+`https://uqfsdxaoqktwndcguxcu.supabase.co/auth/v1/callback` as an authorized
+redirect URI, then paste the client id/secret into **Supabase → Authentication
+→ Providers → Google** and enable it. Sign in with the email set in
+`BOOTSTRAP_ADMIN_EMAIL` and you're auto-enrolled like the other methods.
 
 ### Keys
 

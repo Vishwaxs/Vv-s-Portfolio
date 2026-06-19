@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogIn, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { GoogleIcon } from "@/components/site/BrandIcons";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -27,6 +28,20 @@ export function LoginForm() {
     }
     router.push("/admin");
     router.refresh();
+  };
+
+  const signInGoogle = async () => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+    });
+    // on success the browser is redirected to Google; only errors return here
+    if (error) {
+      setError(
+        "Google sign-in isn't enabled yet — turn on the Google provider in Supabase."
+      );
+    }
   };
 
   const sendMagicLink = async () => {
@@ -81,7 +96,26 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <div className="space-y-4">
+      {/* Google OAuth */}
+      <button
+        type="button"
+        onClick={() => {
+          setError(null);
+          void signInGoogle();
+        }}
+        className="flex w-full items-center justify-center gap-2.5 rounded-full border border-line bg-surface-0 px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
+      >
+        <GoogleIcon size={18} /> Continue with Google
+      </button>
+
+      <div className="flex items-center gap-3 text-xs text-ink-muted">
+        <span className="h-px flex-1 bg-line" />
+        or
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <form onSubmit={submit} className="space-y-4">
       {/* method toggle */}
       <div className="flex rounded-full border border-line bg-surface-1 p-0.5 text-sm">
         {(["magic", "password"] as Mode[]).map((m) => (
@@ -140,6 +174,7 @@ export function LoginForm() {
           ? "Passwordless — we email you a one-time link. No password to remember."
           : "Use the password you set in Supabase."}
       </p>
-    </form>
+      </form>
+    </div>
   );
 }
