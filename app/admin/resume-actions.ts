@@ -239,14 +239,11 @@ export async function importParsed(
       revalidateTag("skills");
     }
 
-    const slugify = (s: string) =>
-      s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
     for (const i of selection.projects ?? []) {
       const p = parsed.projects[i];
       if (!p) continue;
       await supabase.from("projects").insert({
-        slug: `${slugify(p.title)}-${Date.now().toString(36)}`,
+        slug: `${toSlug(p.title)}-${Date.now().toString(36)}`,
         title: p.title,
         summary: p.summary,
         description_md: p.highlights.map((h) => `- ${h}`).join("\n"),
@@ -402,7 +399,7 @@ export async function generateSuggestions(resumeId: string): Promise<ActionResul
   }
 }
 
-const SUGGESTION_TABLES: Record<string, "skills" | "projects" | "experience" | "education" | "certifications" | "achievements" | "profile"> = {
+const SUGGESTION_TABLES: Record<string, SuggestionTable> = {
   skill: "skills",
   project: "projects",
   experience: "experience",
@@ -411,6 +408,147 @@ const SUGGESTION_TABLES: Record<string, "skills" | "projects" | "experience" | "
   achievement: "achievements",
   profile: "profile",
 };
+
+type SuggestionTable =
+  | "skills"
+  | "projects"
+  | "experience"
+  | "education"
+  | "certifications"
+  | "achievements"
+  | "profile";
+
+const toSlug = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+/** Per-table write rules. The AI's suggested_value is free-form and often uses
+ *  resume field names (e.g. `date` for a certification) or omits NOT NULL
+ *  columns (e.g. a project `slug`). We map aliases, normalise dates, fill
+ *  required values, and whitelist columns so an approval can never hit a
+ *  "column not found" / not-null / check-constraint error. */
+const WRITE_CONFIG: Record<
+  SuggestionTable,
+  {
+    columns: string[];
+    aliases?: Record<string, string>;
+    dateColumns?: string[];
+    requiredDates?: Record<string, string>;
+    clamp?: Record<string, [number, number]>;
+    validEnum?: Record<string, { values: string[]; fallback: string }>;
+    slugFrom?: string;
+    createDefaults?: Record<string, Json>;
+  }
+> = {
+  skills: {
+    columns: ["category_id", "name", "level", "icon", "years", "featured", "published", "sort_order"],
+    clamp: { level: [1, 5] },
+    createDefaults: { published: false },
+  },
+  projects: {
+    columns: [
+      "slug", "title", "summary", "description_md", "category_id", "tech_stack",
+      "repo_url", "live_url", "video_url", "featured", "recruiter_highlight",
+      "architecture_md", "challenges_md", "learnings_md", "status",
+      "started_on", "finished_on", "cover_image_path", "published", "sort_order",
+    ],
+    aliases: { tech: "tech_stack", url: "repo_url" },
+    dateColumns: ["started_on", "finished_on"],
+    validEnum: { status: { values: ["completed", "in_progress", "archived"], fallback: "completed" } },
+    slugFrom: "title",
+    createDefaults: { published: false },
+  },
+  experience: {
+    columns: [
+      "role", "organization", "org_url", "location", "employment_type",
+      "start_date", "end_date", "summary_md", "highlights", "tech", "published", "sort_order",
+    ],
+    dateColumns: ["start_date", "end_date"],
+    requiredDates: { start_date: "2000-01-01" },
+    createDefaults: { published: false },
+  },
+  education: {
+    columns: [
+      "institution", "degree", "field", "start_date", "end_date",
+      "grade", "highlights", "published", "sort_order",
+    ],
+    dateColumns: ["start_date", "end_date"],
+    requiredDates: { start_date: "2000-01-01" },
+    createDefaults: { published: false },
+  },
+  certifications: {
+    columns: ["name", "issuer", "issue_date", "credential_url", "credential_id", "verified", "published", "sort_order"],
+    aliases: { date: "issue_date" },
+    dateColumns: ["issue_date"],
+    createDefaults: { published: false, issuer: "" },
+  },
+  achievements: {
+    columns: ["title", "description_md", "date", "url", "published", "sort_order"],
+    aliases: { description: "description_md" },
+    dateColumns: ["date"],
+    createDefaults: { published: false },
+  },
+  profile: {
+    columns: ["full_name", "headline", "tagline", "bio_md", "location", "email", "phone", "avatar_path"],
+  },
+};
+
+/** Coerce an AI suggestion into a row the table will actually accept. */
+function sanitizeSuggestion(
+  table: SuggestionTable,
+  action: "create" | "update" | "delete",
+  raw: Record<string, Json>
+): Record<string, Json> {
+  const cfg = WRITE_CONFIG[table];
+  const src: Record<string, Json> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    src[cfg.aliases?.[k] ?? k] = v;
+  }
+
+  // fold resume highlight bullets into a project's description if not given one
+  if (table === "projects" && Array.isArray(raw.highlights) && src.description_md == null) {
+    src.description_md = (raw.highlights as unknown[]).map((h) => `- ${String(h)}`).join("\n");
+  }
+
+  const out: Record<string, Json> = {};
+  for (const col of cfg.columns) {
+    if (!(col in src)) continue;
+    let val = src[col];
+    if (cfg.dateColumns?.includes(col)) {
+      val = normalizeDate(typeof val === "string" ? val : null);
+    }
+    if (cfg.clamp?.[col] && typeof val === "number") {
+      const [lo, hi] = cfg.clamp[col];
+      val = Math.min(hi, Math.max(lo, Math.round(val)));
+    }
+    const enumRule = cfg.validEnum?.[col];
+    if (enumRule && (typeof val !== "string" || !enumRule.values.includes(val))) {
+      val = enumRule.fallback;
+    }
+    out[col] = val;
+  }
+
+  // NOT NULL date columns must carry a value
+  for (const [col, fallback] of Object.entries(cfg.requiredDates ?? {})) {
+    if (out[col] == null) out[col] = fallback;
+  }
+
+  // never send explicit nulls — let column defaults apply / leave columns absent
+  for (const key of Object.keys(out)) {
+    if (out[key] === null) delete out[key];
+  }
+
+  if (action === "create") {
+    if (cfg.slugFrom && out.slug == null) {
+      const base = typeof src[cfg.slugFrom] === "string" ? (src[cfg.slugFrom] as string) : table;
+      out.slug = `${toSlug(base) || table}-${Date.now().toString(36)}`;
+    }
+    for (const [col, dv] of Object.entries(cfg.createDefaults ?? {})) {
+      if (out[col] === undefined) out[col] = dv;
+    }
+  }
+
+  return out;
+}
 
 export async function resolveSuggestion(
   id: string,
@@ -430,9 +568,28 @@ export async function resolveSuggestion(
     if (decision === "approved") {
       const table = SUGGESTION_TABLES[suggestion.entity_type];
       if (!table) return { ok: false, error: "Unknown entity type" };
-      const value = suggestion.suggested_value as Record<string, Json>;
+      const rawValue = suggestion.suggested_value;
+      if (!rawValue || typeof rawValue !== "object" || Array.isArray(rawValue)) {
+        return { ok: false, error: "Suggestion has no usable fields" };
+      }
+      const value = sanitizeSuggestion(
+        table,
+        suggestion.action as "create" | "update" | "delete",
+        rawValue as Record<string, Json>
+      );
 
-      if (suggestion.action === "create") {
+      if (table === "profile") {
+        // singleton — always edit the one profile row regardless of entity_id
+        let targetId = suggestion.entity_id;
+        if (!targetId) {
+          const { data: prof } = await supabase.from("profile").select("id").limit(1).maybeSingle();
+          targetId = prof?.id ?? null;
+        }
+        if (!targetId) return { ok: false, error: "No profile row to update" };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await supabase.from("profile").update(value as any).eq("id", targetId);
+        if (error) return { ok: false, error: error.message };
+      } else if (suggestion.action === "create") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error } = await supabase.from(table).insert(value as any);
         if (error) return { ok: false, error: error.message };
