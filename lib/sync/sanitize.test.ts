@@ -35,7 +35,7 @@ describe("sanitizeSuggestion", () => {
     expect(out.published).toBe(false);
   });
 
-  it("fills issuer from the create default when the AI omits it", () => {
+  it("fills issuer from the create default when the suggestion omits it", () => {
     const out = sanitizeSuggestion("certifications", "create", { name: "Some cert" });
     expect(out.issuer).toBe("");
   });

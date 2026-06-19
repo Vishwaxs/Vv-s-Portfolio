@@ -1,4 +1,4 @@
--- Role-based portfolio engine + multi-resume management + AI sync
+-- Role-based portfolio engine + multi-resume management + resume sync
 create table public.roles (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,

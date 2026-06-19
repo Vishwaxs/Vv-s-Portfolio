@@ -33,7 +33,7 @@ export function normalizeDate(value: string | null | undefined): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
-/** Per-table write rules. An AI suggestion's `suggested_value` is free-form and
+/** Per-table write rules. A sync suggestion's `suggested_value` is free-form and
  *  often uses resume field names (e.g. `date` for a certification) or omits
  *  NOT NULL columns (e.g. a project `slug`). We map aliases, normalise dates,
  *  fill required values, and whitelist columns so an approval can never hit a
@@ -104,7 +104,7 @@ const WRITE_CONFIG: Record<
   },
 };
 
-/** Coerce an AI suggestion into a row the given table will actually accept. */
+/** Coerce a sync suggestion into a row the given table will actually accept. */
 export function sanitizeSuggestion(
   table: SuggestionTable,
   action: "create" | "update" | "delete",
