@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Surfaces: page background up to elevated cards */
+  --color-surface-0: oklch(99% 0.002 250);
+  --color-surface-1: oklch(97% 0.004 250);
+  --color-surface-2: oklch(94.5% 0.006 250);
+  --color-surface-3: oklch(91% 0.008 250);
+
+  /* Text */
+  --color-ink: oklch(22% 0.02 260);
+  --color-ink-secondary: oklch(42% 0.015 260);
+  --color-ink-muted: oklch(58% 0.012 260);
+
+  /* Accent (indigo) */
+  --color-accent-50: oklch(96.5% 0.02 275);
+  --color-accent-100: oklch(93% 0.04 275);
+  --color-accent-200: oklch(87% 0.07 275);
+  --color-accent-300: oklch(78% 0.1 275);
+  --color-accent-400: oklch(68% 0.14 275);
+  --color-accent-500: oklch(58% 0.18 275);
+  --color-accent-600: oklch(51% 0.2 275);
+  --color-accent-700: oklch(45% 0.19 275);
+  --color-accent-800: oklch(39% 0.16 275);
+  --color-accent-900: oklch(33% 0.13 275);
+
+  /* Secondary hue (violet/pink) for gradients used in hero/headings */
+  --color-grad-from: oklch(58% 0.18 265);
+  --color-grad-via: oklch(56% 0.2 310);
+  --color-grad-to: oklch(60% 0.18 350);
+
+  --color-success: oklch(62% 0.15 150);
+  --color-warning: oklch(75% 0.15 80);
+  --color-danger: oklch(58% 0.2 25);
+
+  --color-line: oklch(88% 0.006 250);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --text-display: clamp(2.5rem, 6vw, 4rem);
+  --text-display--line-height: 1.05;
+  --text-display--font-weight: 700;
+  --text-h1: clamp(2rem, 4vw, 2.75rem);
+  --text-h1--line-height: 1.15;
+  --text-h1--font-weight: 700;
+  --text-h2: clamp(1.5rem, 3vw, 2rem);
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 600;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.35;
+  --text-h3--font-weight: 600;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.05), 0 8px 24px -12px oklch(0% 0 0 / 0.12);
+}
+
+/* Dark mode: re-map semantic tokens; components never need dark: overrides
+   for color decisions beyond what the tokens express. */
+.dark {
+  --color-surface-0: oklch(17% 0.015 260);
+  --color-surface-1: oklch(21% 0.016 260);
+  --color-surface-2: oklch(25% 0.018 260);
+  --color-surface-3: oklch(30% 0.02 260);
+
+  --color-ink: oklch(94% 0.008 250);
+  --color-ink-secondary: oklch(78% 0.012 255);
+  --color-ink-muted: oklch(62% 0.014 255);
+
+  --color-line: oklch(32% 0.015 260);
+
+  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.4), 0 8px 24px -12px oklch(0% 0 0 / 0.5);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--color-accent-200);
+  color: var(--color-ink);
+}
+.dark ::selection {
+  background-color: var(--color-accent-700);
+  color: white;
+}
+
+/* Frosted glass surface (backdrop blur + saturation). Used by SpotlightCard
+   and other elevated panels. Falls back to a solid surface where
+   backdrop-filter is unsupported. */
+.glass {
+  background-color: color-mix(in oklch, var(--color-surface-1) 72%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-line) 75%, transparent);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background-color: color-mix(in oklch, var(--color-surface-1) 55%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+}
+
+/* Gradient text helper used in hero/section headings */
+.text-gradient {
+  background-image: linear-gradient(
+    to right,
+    var(--color-grad-from),
+    var(--color-grad-via),
+    var(--color-grad-to)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Decorative motion (hero blobs, avatar ring). Disabled for reduced motion. */
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(24px, -36px) scale(1.08); }
+  66% { transform: translate(-18px, 18px) scale(0.94); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+.animate-blob { animation: blob 9s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 24s linear infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-blob,
+  .animate-spin-slow,
+  .animate-float {
+    animation: none;
+  }
+}
