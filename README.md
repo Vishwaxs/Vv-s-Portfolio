@@ -1,13 +1,13 @@
 # Vishwas Vashishtha — Portfolio
 
-Production portfolio built with Next.js 15 (App Router), React 19, Tailwind CSS v4, and Supabase. Content is fully database-driven and managed through a built-in admin dashboard, with a role-based portfolio engine and AI-assisted resume parsing.
+Production portfolio built with Next.js 15 (App Router), React 19, Tailwind CSS v4, and Supabase. Content is fully database-driven and managed through a built-in admin dashboard, with a role-based portfolio engine and an automated resume-parsing module.
 
 ## Features
 
 - **Public site** — home, about, projects (with case-study pages), contact. Server components, ISR with tag-based revalidation.
 - **Admin dashboard** (`/admin`) — CRUD for all content (profile, projects, skills, education, experience, achievements, certifications, social links), messages inbox, audit log, settings. Supabase Auth, single-admin model.
 - **Role engine** — recruiters can view the portfolio tailored to a role (SDE / full-stack / frontend); content weighting and per-role overrides are configured in the admin.
-- **Resume module** — upload multiple resume versions, parse PDFs into structured data with the Claude API, review AI-suggested syncs between resume and portfolio content, and activate the version served by the public "Download Resume" button.
+- **Resume module** — upload multiple resume versions, parse PDFs into structured data, review suggested syncs between resume and portfolio content, and activate the version served by the public "Download Resume" button.
 - **SEO** — DB-driven metadata, JSON-LD, dynamic OG images, sitemap/robots.
 
 ## Stack
@@ -17,7 +17,7 @@ Production portfolio built with Next.js 15 (App Router), React 19, Tailwind CSS 
 | Framework | Next.js 15 App Router, React 19, TypeScript |
 | Styling | Tailwind CSS v4 (`@theme` design tokens), framer-motion (reveal animations only) |
 | Data | Supabase (Postgres + RLS, Auth, Storage) |
-| AI | Anthropic Claude API (resume parsing, sync suggestions) — optional |
+| Resume parsing | Optional provider API (PDF → structured data, sync suggestions) |
 | Hosting | Vercel |
 
 ## Getting started
@@ -35,7 +35,7 @@ npm run dev
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon (publishable) key |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | Signed URLs for the public resume download (everything else runs under RLS) |
-| `ANTHROPIC_API_KEY` | optional | Enables AI resume parsing/sync (falls back to manual entry) |
+| `ANTHROPIC_API_KEY` | optional | Enables resume parsing/sync (falls back to manual entry) |
 | `NEXT_PUBLIC_SITE_URL` | yes | Canonical URL for metadata/sitemap |
 
 See `docs/DEPLOYMENT.md` for full provisioning and deployment steps, and `docs/SECURITY-CLEANUP.md` for repo-history cleanup notes.
